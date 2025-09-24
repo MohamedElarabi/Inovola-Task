@@ -7,7 +7,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tast/main.dart';
+import 'package:Task/main.dart';
 
 void main() {
   group('Expense Tracker App Widget Tests', () {
