@@ -1,0 +1,38 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: debug-statements
+
+  - repo: https://github.com/dart-lang/dart_style
+    rev: 2.3.2
+    hooks:
+      - id: dartfmt
+
+  - repo: local
+    hooks:
+      - id: flutter-analyze
+        name: flutter-analyze
+        entry: flutter analyze
+        language: system
+        files: \.dart$
+        pass_filenames: false
+
+      - id: flutter-test
+        name: flutter-test
+        entry: flutter test
+        language: system
+        files: \.dart$
+        pass_filenames: false
+
+      - id: flutter-build-runner
+        name: flutter-build-runner
+        entry: flutter packages pub run build_runner build --delete-conflicting-outputs
+        language: system
+        files: \.dart$
+        pass_filenames: false

@@ -1,0 +1,81 @@
+default_platform(:android)
+
+platform :android do
+  desc 'Clean, pub get, build android appbundle (release)'
+  lane :build_play do
+    sh('flutter', 'clean')
+    sh('flutter', 'pub', 'get')
+    sh('flutter', 'build', 'appbundle', '--release')
+  end
+
+  desc 'Upload AAB to Google Play (internal track)'
+  lane :upload_play do
+    aab_path = Dir['build/app/outputs/bundle/release/*.aab'].first
+    UI.user_error!('AAB not found. Run android:build_play first.') unless aab_path
+    supply(
+      aab: aab_path,
+      track: ENV.fetch('PLAY_TRACK', 'internal'),
+      json_key_data: ENV['PLAY_JSON_KEY'], # base64 or raw json
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  desc 'Build and upload to Google Play internal'
+  lane :play_release do
+    build_play
+    upload_play
+  end
+
+  desc 'Upload AAB to Huawei AppGallery'
+  lane :upload_huawei do
+    aab_path = Dir['build/app/outputs/bundle/release/*.aab'].first
+    UI.user_error!('AAB not found. Run android:build_play first.') unless aab_path
+    appgallery(
+      client_id: ENV['HUAWEI_CLIENT_ID'],
+      client_secret: ENV['HUAWEI_CLIENT_SECRET'],
+      app_id: ENV['HUAWEI_APP_ID'],
+      file_path: aab_path,
+      release_type: 'APP'
+    )
+  end
+end
+
+platform :ios do
+  desc 'Clean, pub get, build iOS IPA (release)'
+  lane :build_ios do
+    sh('flutter', 'clean')
+    sh('flutter', 'pub', 'get')
+    # Ensure CocoaPods installed
+    sh('bundle', 'exec', 'pod', 'install', chdir: 'ios') if File.exist?('ios/Podfile')
+    sh('flutter', 'build', 'ipa', '--release')
+  end
+
+  desc 'Upload IPA to TestFlight'
+  lane :upload_testflight do
+    ipa_path = Dir['build/ios/ipa/*.ipa'].first
+    UI.user_error!('IPA not found. Run ios:build_ios first.') unless ipa_path
+    pilot(
+      ipa: ipa_path,
+      skip_waiting_for_build_processing: true,
+      apple_id: ENV['APPSTORE_APPLE_ID'],
+      itc_provider: ENV['APPSTORE_ITC_PROVIDER']
+    )
+  end
+
+  desc 'Build and upload to TestFlight'
+  lane :testflight_release do
+    build_ios
+    upload_testflight
+  end
+end
+
+lane :doctor do
+  sh('flutter', '--version')
+  sh('ruby', '--version')
+  sh('bundle', '--version')
+end
+
+
