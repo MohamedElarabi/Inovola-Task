@@ -1,19 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'core/utils/create_repo.dart';
 import 'core/utils/hive_helper.dart';
-import 'core/network/api_client.dart';
-import 'features/currency/presentation/bloc/currency_event.dart';
-import 'features/expense/data/datasources/expense_local_datasource.dart';
-import 'features/expense/data/repositories/expense_repository_impl.dart';
-import 'features/expense/domain/repositories/expense_repository.dart';
-import 'features/expense/presentation/bloc/expense_bloc.dart';
-import 'features/currency/data/datasources/currency_local_datasource.dart';
-import 'features/currency/data/datasources/currency_remote_datasource.dart';
-import 'features/currency/data/repositories/currency_repository_impl.dart';
-import 'features/currency/domain/repositories/currency_repository.dart';
 import 'features/currency/presentation/bloc/currency_bloc.dart';
+import 'features/currency/presentation/bloc/currency_event.dart';
 import 'features/dashboard/presentation/pages/dashboard_page.dart';
+import 'features/expense/presentation/bloc/expense_bloc.dart';
 import 'features/expense/presentation/bloc/expense_event.dart';
 
 void main() async {
@@ -39,13 +32,13 @@ class ExpenseTrackerApp extends StatelessWidget {
             // Expense BLoC
             BlocProvider<ExpenseBloc>(
               create: (context) => ExpenseBloc(
-                expenseRepository: _createExpenseRepository(),
+                expenseRepository: CreateRepo().createExpenseRepository(),
               )..add(const LoadExpenses()),
             ),
             // Currency BLoC
             BlocProvider<CurrencyBloc>(
               create: (context) => CurrencyBloc(
-                currencyRepository: _createCurrencyRepository(),
+                currencyRepository: CreateRepo().createCurrencyRepository(),
               )..add(const LoadExchangeRates()),
             ),
           ],
@@ -90,25 +83,5 @@ class ExpenseTrackerApp extends StatelessWidget {
         ),
       );
 
-  ExpenseRepository _createExpenseRepository() {
-    final apiClient = ApiClient();
-    final localDataSource = ExpenseLocalDataSourceImpl();
-    final currencyRemoteDataSource = CurrencyRemoteDataSourceImpl(apiClient: apiClient);
 
-    return ExpenseRepositoryImpl(
-      localDataSource: localDataSource,
-      currencyRemoteDataSource: currencyRemoteDataSource,
-    );
-  }
-
-  CurrencyRepository _createCurrencyRepository() {
-    final apiClient = ApiClient();
-    final localDataSource = CurrencyLocalDataSourceImpl();
-    final remoteDataSource = CurrencyRemoteDataSourceImpl(apiClient: apiClient);
-
-    return CurrencyRepositoryImpl(
-      localDataSource: localDataSource,
-      remoteDataSource: remoteDataSource,
-    );
-  }
 }
